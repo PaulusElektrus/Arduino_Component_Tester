@@ -1,6 +1,6 @@
 /*  Based on: https://github.com/kubi48/TransistorTester-source 
     
-    Version: 1.0 by PaulusElektrus
+    Version: 1.0.3 by PaulusElektrus
 
 */
 
@@ -26,213 +26,70 @@
   #include <Adafruit_SSD1306.h>
 #endif
 
-
-// ******** config options for your Semiconductor tester
-
-// Every changing of this Makefile will result in new compiling the whole
-// programs, if you call make or make upload.
-
 #define MCU atmega328p
+
 #define F_CPU 16000000UL
 
-// Select your language:
-// Available languages are: LANG_ENGLISH, LANG_GERMAN, LANG_POLISH, LANG_CZECH, LANG_SLOVAK, LANG_SLOVENE,
-//                          LANG_DUTCH, LANG_BRASIL, LANG_RUSSIAN, LANG_UKRAINIAN
 #define LANG_GERMAN
 
-// The LCD_CYRILLIC option is necessary, if you have a display with cyrillic characterset.
-// This lcd-display don't have a character for Ohm and for u (micro).
-// Russian language requires a LCD controller with russian characterset and option LCD_CYRILLIC!
-// define LCD_CYRILLIC
-
-// The LCD_DOGM option must be set for support of the DOG-M type of LCD modules with ST7036 controller.
-// For this LCD type the contrast must be set with software command.
-//#define LCD_DOGM
-
-// Option STRIP_GRID_BOARD selects different board-layout, do not set for standard board!
-// The connection of LCD is totally different for both versions.
-//#define STRIP_GRID_BOARD
-
-// The WITH_SELFTEST option enables selftest function (only for mega168 or mega328).
-//#define WITH_SELFTEST
-
-// AUTO_CAL will enable the autocalibration of zero offset of capacity measurement and
-// also the port output resistance values will be find out in SELFTEST section.
-// With a external capacitor a additionally correction of reference voltage is figured out for 
-// low capacity measurement and also for the AUTOSCALE_ADC measurement.
-// The AUTO_CAL option is only selectable for mega168 and mega328.
-//#define AUTO_CAL
-
-// FREQUENCY_50HZ enables a 50 Hz frequency generator for up to one minute at the end of selftests.
-//#define FREQUENCY_50HZ
-
-// The WITH_AUTO_REF option enables reading of internal REF-voltage to get factors for the Capacity measuring.
 #define WITH_AUTO_REF
-// REF_C_KORR corrects the reference Voltage for capacity measurement (<40uF) and has mV units.
-// Greater values gives lower capacity results.
+
 #define REF_C_KORR 12
-// REF_L_KORR corrects the reference Voltage for inductance measurement and has mV units.
+
 #define REF_L_KORR 40
-// C_H_KORR defines a correction of 0.1% units for big capacitor measurement.
-// Positive values will reduce measurement results.
+
 #define C_H_KORR 0
 
-// The WITH_UART option enables the software UART (TTL level output at Pin PC3, 26).
-// If the option is deselected, PC3 can be used as external voltage input with a
-// 10:1 resistor divider.
-//#define WITH_UART
-
-// The CAP_EMPTY_LEVEL  defines the empty voltage level for capacitors in mV.
-// Choose a higher value, if your Tester reports "Cell!" by unloading capacitors.
 #define CAP_EMPTY_LEVEL 4
 
-// The AUTOSCALE_ADC option enables the autoscale ADC (ADC use VCC and Bandgap Ref).
 #define AUTOSCALE_ADC
+
 #define REF_R_KORR 3
 
-// The ESR_ZERO value define the zero value of ESR measurement (units = 0.01 Ohm).
-//#define ESR_ZERO 29
 #define ESR_ZERO 20
 
-// NO_AREF_CAP tells your Software, that you have no Capacitor installed at pin AREF (21).
-// This enables a shorter wait-time for AUTOSCALE_ADC function.
-// A capacitor with 1nF can be used with the option NO_AREF_CAP set.
 #define NO_AREF_CAP
 
-// The OP_MHZ option tells the software the Operating Frequency of your ATmega.
-// OP_MHZ 16
-
-// Restart from sleep mode will be delayed for 16384 clock tics with crystal mode.
-// Operation with the internal RC-Generator or external clock will delay the restart by only 6 clock tics.
-// You must specify this with "#define RESTART_DELAY_TICS=6", if you don't use the crystal mode.
-//#define RESTART_DELAY_TICS 6
-
-// The USE_EEPROM option specify where you wish to locate fix text and tables.
-// If USE_EEPROM is unset, program memory (flash) is taken for fix text and tables.
-//#define USE_EEPROM
-
-// Setting EBC_STYPE will select the old style to present the order of Transistor connection (EBC=...).
-// Omitting the option will select the 123=... style.  Every point is replaced by a character identifying 
-// type of connected transistor pin (B=Base, E=Emitter, C=Collector, G=Gate, S=Source, D=Drain).
-// If you select EBC_STYLE=321 , the style will be 321=... , the inverted order to the 123=... style.
-//#define EBC_STYLE
-//#define EBC_STYLE 321
-
-// Setting of NO_NANO avoids the use of n as prefix for Farad (nF), the mikro prefix is used insted (uF).
-//#define NO_NANO
-
-// The PULLUP_DISABLE option disable the pull-up Resistors of IO-Ports.
-// To use this option a external pull-up Resistor (10k to 30k)
-// from Pin 13 to VCC must be installed!
 #define PULLUP_DISABLE
 
-// The ANZ_MESS option specifies, how often an ADC value is read and accumulated.
-// Possible values of ANZ_MESS are 5 to 200.
 #define ANZ_MESS 25
 
-// The POWER_OFF option enables the power off function, otherwise loop measurements infinitely
-// until power is disconnected with a ON/OFF switch (#define POWER_OFF).
-// If you have the tester without the power off transistors, you can deselect POWER_OFF .
-// If you have NOT selected the POWER_OFF option with the transistors installed,
-// you can stop measuring by holding the key several seconds after a result is
-// displayed. After releasing the key, the tester will be shut off by timeout.
-// Otherwise you can also specify, after how many measurements without found part
-// the tester will shut down (#define POWER_OFF=5).
-// The tester will also shut down with found part,
-// but successfull measurements are allowed double of the specified number.
-// You can specify up to 255 empty measurements (#define POWER_OFF=255).
-//#define POWER_OFF 5
-//#define POWER_OFF
-
-// Option BAT_CHECK enables the Battery Voltage Check, otherwise the SW Version is displayed instead of Bat.
-// BAT_CHECK should be set for battery powered tester version.
-//#define BAT_CHECK
-
-// The BAT_OUT option enables Battery Voltage Output on LCD (if BAT_CHECK is selected).
-// If your 9V supply has a diode installed, use the BAT_OUT=600 form to specify the
-// threshold voltage of your diode to adjust the output value.
-// This threshold level is added to LCD-output and does not affect the voltage checking levels.
-//#define BAT_OUT 150
-
-// To adjust the warning-level and poor-level of battery check to the capability of a
-// low drop voltage regulator, you can specify the Option BAT_POOR=5400 .
-// The unit for this option value is 1mV , 5400 means a poor level of 5.4V.
-// The warning level is 0.8V higher than the specified poor level (>5.3V).
-// The warning level is 0.4V higher than the specified poor level (>2.9V, <=5.3V).
-// The warning level is 0.2V higher than the specified poor level (>1.3V, <=2.9V).
-// The warning level is 0.1V higher than the specified poor level (<=1.3V).
-// Setting the poor level to low values is not recommended for rechargeable Batteries,
-// because this increase the danger for deep discharge!!
 #define BAT_POOR 6400
 
-// The sleep mode of the ATmega168 or ATmega328 is normally used by the software to save current.
-// You can inhibit this with the option INHIBIT_SLEEP_MODE .
-//#define INHIBIT_SLEEP_MODE
-
-// ******** end of selectable options
-
-/* -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- */
-
-// ########  Configuration
-
 #ifndef ADC_PORT
-//#define DebugOut 3		// if set, output of voltages of resistor measurements in row 2,3,4
-//#define DebugOut 4		// if set, output of voltages of Diode measurement in row 3+4
-//#define DebugOut 5		// if set, output of Transistor checks in row 2+3
-//#define DebugOut 10		// if set, output of capacity measurements (ReadCapacity) in row 3+4 
-
-/*
-  Port, that is directly connected to the probes.
-  This Port must have an ADC-Input  (ATmega8:  PORTC).
-  The lower pins of this Port must be used for measurements.
-  Please don't change the definitions of TP1, TP2 and TP3!
-  The TPREF pin can be connected with a 2.5V precision voltage reference
-  The TPext can be used with a 10:1 resistor divider as external voltage probe up to 50V
-*/
 
 #define ADC_PORT PORTC
+
 #define ADC_DDR DDRC
+
 #define ADC_PIN PINC
+
 #define TP1 0
+
 #define TP2 1
+
 #define TP3 2
+
 #define TPext 3
-// Port pin for 2.5V precision reference used for VCC check (optional)
+
 #define TPREF 4
-// Port pin for Battery voltage measuring
+
 #define TPBAT 5
 
-/*
-  exact values of used resistors (Ohm).
-  The standard value for R_L is 680 Ohm, for R_H 470kOhm.
-
-  To calibrate your tester the resistor-values can be adjusted:
-*/
 #define R_L_VAL 6800          // standard value 680 Ohm, multiplied by 10 for 0.1 Ohm resolution
-//#define R_L_VAL 6690        // this will be define a 669 Ohm
+
 #define R_H_VAL 47000         // standard value 470000 Ohm, multiplied by 10, divided by 100 
-//#define R_H_VAL 47900       // this will be define a 479000 Ohm, divided by 100 
 
 #define R_DDR DDRB
+
 #define R_PORT PORTB
 
-/*
-  Port for the Test resistors
-  The Resistors must be connected to the lower 6 Pins of the Port in following sequence:
-  RLx = 680R-resistor for Test-Pin x
-  RHx = 470k-resistor for Test-Pin x
-
-  RL1 an Pin 0
-  RH1 an Pin 1
-  RL2 an Pin 2
-  RH2 an Pin 3
-  RL3 an Pin 4
-  RH3 an Pin 5
-*/
-
 #define ON_DDR DDRD
+
 #define ON_PORT PORTD
+
 #define ON_PIN_REG PIND
+
 #define ON_PIN 18               // Pin, must be switched to high to switch power on
 
 #ifdef STRIP_GRID_BOARD
@@ -242,9 +99,6 @@
 // normal layout version
   #define RST_PIN 17            // Pin, is switched to low, if push button is pressed
 #endif
-
-
-// Port(s) / Pins for LCD
 
 #ifdef STRIP_GRID_BOARD
   // special Layout for strip grid board
@@ -280,35 +134,13 @@
   #define HW_LCD_B7_PIN          2
 #endif
 
-
-// U_VCC defines the VCC Voltage of the ATmega in mV units
-
 #define U_VCC 5000
-// integer factors are used to change the ADC-value to mV resolution in ReadADC !
 
-// With the option NO_CAP_HOLD_TIME you specify, that capacitor loaded with 680 Ohm resistor will not
-// be tested to hold the voltage same time as load time.
-// Otherwise (without this option) the voltage drop during load time is compensated to avoid displaying
-// too much capacity for capacitors with internal parallel resistance.
-// #define NO_CAP_HOLD_TIME
-
-
-// U_SCALE can be set to 4 for better resolution of ReadADC function for resistor measurement
 #define U_SCALE 4
 
-// R_ANZ_MESS can be set to a higher number of measurements (up to 200) for resistor measurement
 #define R_ANZ_MESS 190
 
-// Watchdog
-//#define WDT_enabled
-/*
-  If you remove the "#define WDT_enabled" , the Watchdog will not be activated.
-  This is only for Test or debugging usefull.
-  For normal operation please activate the Watchdog !
-*/
-
-// ########  End of configuration 
-
+// End of configuration ###############################################
 
 #if R_ANZ_MESS < ANZ_MESS
   #undef R_ANZ_MESS
@@ -327,7 +159,6 @@
 #ifndef REF_L_KORR
   #define REF_L_KORR 50
 #endif
-
 
 // the following definitions specify where to load external data from: EEprom or flash
 #ifdef USE_EEPROM
@@ -360,7 +191,6 @@
   #define use_lcd_pgm
 #endif
 
-
 // RH_OFFSET : systematic offset of resistor measurement with RH (470k) 
 // resolution is 0.1 Ohm, 3500 defines a offset of 350 Ohm
 #define RH_OFFSET 3500 
@@ -371,37 +201,7 @@
 // CABLE_CAP defines the capacity (pF) of 12cm cable with clip at the terminal pins
 #define CABLE_CAP 3
 
-
-// select the right Processor Typ
-/*
-#if defined(__AVR_ATmega48__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega48P__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega88__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega88P__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega168__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega168P__)
-  #define PROCESSOR_TYP 168
-#elif defined(__AVR_ATmega328__)
-  #define PROCESSOR_TYP 328
-#elif defined(__AVR_ATmega328P__)
-  #define PROCESSOR_TYP 328
-#elif defined(__AVR_ATmega640__)
-  #define PROCESSOR_TYP 1280
-#elif defined(__AVR_ATmega1280__)
-  #define PROCESSOR_TYP 1280
-#elif defined(__AVR_ATmega2560__)
-  #define PROCESSOR_TYP 1280
-#else
-  #define PROCESSOR_TYP 8
-#endif
-*/
 #define PROCESSOR_TYP 328
-
 
 // automatic selection of right call type
 #if FLASHEND > 0X1FFF
@@ -409,9 +209,6 @@
 #else
   #define ACALL rcall
 #endif
-
-
-// automatic selection of option and parameters for different AVRs
 
 //------------------=========----------
 #if PROCESSOR_TYP == 168
@@ -621,24 +418,6 @@
                                 // will only be used, if not set before in config.h
 #endif
 
-//**********************************************************
-
-// defines for the WITH_UART option
-/*
-With define SWUART_INVERT you can specify, if the software-UART operates normal or invers.
-in the normal mode the UART sends with usual logik level (Low = 0; High = 1).
-You can use this mode for direct connection to a uC, or a level converter like MAX232.
-
-With invers mode the UART sends with invers logik (Low = 1, High = 0).
-This is the level of a standard RS232 port of a PC.
-In most cases the output of the software UART can so be connected to the RxD of a PC.
-The specification say, that level -3V to 3V is unspecified, but in most cases it works.
-Is a simple but unclean solution.
-
-Is SWUART_INVERT defined, the UART works is inverse mode
-*/
-//#define SWUART_INVERT
-
 #define TxD 3	  // TxD-Pin of Software-UART; must be at Port C !
 #ifdef WITH_UART
   #define TXD_MSK (1<<TxD)
@@ -651,7 +430,6 @@ Is SWUART_INVERT defined, the UART works is inverse mode
 #else
   #define TXD_VAL TXD_MSK
 #endif
-
 
 #ifdef INHIBIT_SLEEP_MODE
   // save memory, do not use the sleep mode
@@ -752,7 +530,6 @@ Is SWUART_INVERT defined, the UART works is inverse mode
 
 #endif  // #ifndef ADC_PORT
 
-
 // the hFE (B) can be determined with common collector and common emitter circuit
 // with more than 16K both methodes are possible
 #ifdef COMMON_COLLECTOR
@@ -763,26 +540,10 @@ Is SWUART_INVERT defined, the UART works is inverse mode
   #define COMMON_EMITTER
 #endif
 
-/* -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- */
-
 #define MAIN_C
 
 #if defined (MAIN_C)
   #define COMMON
-  /*
-  The voltage at a capacitor grows with  Uc = VCC * (1 - e**(-t/T))
-  The voltage 1.3V is reached at  t = -ln(3.7/5)*T  = 0.3011*T . 
-  Time constant is  T = R * C ; also
-  C = T / R
-  for the resistor 470 kOhm  is C = t / (0.3011 * 470000)
-  H_Fakt = 707/100 for a result in pF units.
-  */
-
-// Big Capacities (>50uF) are measured with up to 500 load-pulses with the 680 Ohm resistor.
-// Each  of this load-puls has an length of 10ms. After every load-pulse the voltage of the
-// capacitor is measured. If the voltage is more than 300mV, the capacity is computed by
-// interpolating the corresponding values of the table RLtab and multiply that with the number
-// of load pulses (*10).
 
 // Widerstand 680 Ohm                300   325   350   375   400   425   450   475   500   525   550   575   600   625   650   675   700   725   750   775   800   825   850   875   900   925   950   975  1000  1025  1050  1075  1100  1125  1150  1175  1200  1225  1250  1275  1300  1325  1350  1375  1400  mV
 const uint16_t RLtab[] MEM_TEXT = {22447,20665,19138,17815,16657,15635,14727,13914,13182,12520,11918,11369,10865,10401, 9973, 9577, 9209, 8866, 8546, 8247, 7966, 7702, 7454, 7220, 6999, 6789, 6591, 6403, 6224, 6054, 5892, 5738, 5590, 5449, 5314, 5185, 5061, 4942, 4828, 4718, 4613, 4511, 4413, 4319, 4228};
@@ -796,12 +557,6 @@ const uint16_t RLtab[] MEM_TEXT = {22447,20665,19138,17815,16657,15635,14727,139
   // resistor  470000 Ohm      1000 1050 1100 1150 1200 1250 1300 1350 1400  mV
   const uint16_t RHtab[] PROGMEM = { 954, 903, 856, 814, 775, 740, 707, 676, 648};
 #endif
-
-// with integer factors the ADC-value will be changed to mV resolution in ReadADC !
-// all if statements are corrected to the mV resolution.
-
-
-// Strings in PROGMEM or in EEprom
 
 #if defined(LANG_GERMAN)		// deutsch
    const unsigned char TestRunning[] MEM_TEXT = "Testen...";
@@ -845,7 +600,6 @@ const uint16_t RLtab[] MEM_TEXT = {22447,20665,19138,17815,16657,15635,14727,139
     const unsigned char ATE[] MEM_TEXT = "Test End";
   #endif
 #endif
-
 
 // Strings, which are not dependent of any language
 const unsigned char Bat_str[] MEM_TEXT = "Bat. ";
@@ -896,7 +650,7 @@ const unsigned char VCC_str[] MEM_TEXT = "VCC=";
 #endif
 
 
-const unsigned char VERSION_str[] MEM2_TEXT = "Component Tester 1.0";
+const unsigned char VERSION_str[] MEM2_TEXT = "Component Tester 1.0.3";
 
 const unsigned char AnKat[] MEM_TEXT = {'-', LCD_CHAR_DIODE1, '-',0};
 const unsigned char KatAn[] MEM_TEXT = {'-', LCD_CHAR_DIODE2, '-',0};
