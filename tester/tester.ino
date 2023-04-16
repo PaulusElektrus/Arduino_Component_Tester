@@ -17,34 +17,7 @@
 #include <stdint.h>
 #include <avr/power.h>
 
-#define OLED_I2C
-
-#ifdef LCD_I2C
-  #ifndef LCD1602
-    #define LCD1602
-  #endif
-#endif
-
-#ifdef OLED_I2C
-  #ifndef OLED096
-    #define OLED096
-  #endif
-#endif
-
-#ifdef LCD1602
-  #ifdef LCD_I2C
-    #include <Wire.h> 
-    #include <LiquidCrystal_I2C.h>
-  #else
-    #include <LiquidCrystal.h>
-  #endif
-#endif
-
-#ifdef NOK5110
-  #include <SPI.h>
-  #include <Adafruit_GFX.h>
-  #include <Adafruit_PCD8544.h>
-#endif
+#define OLED096
 
 #ifdef OLED096
   #include <SPI.h>
@@ -369,7 +342,7 @@
     #define MEM2_TEXT PROGMEM
     #define MEM2_read_byte(a)  pgm_read_byte(a)
     #define MEM2_read_word(a)  pgm_read_word(a)
-    #define lcd_fix2_string(a)  lcd_pgm_string(a)
+    #define lcd_fix2_string(a)  lcd_fix_string(a)
     #define use_lcd_pgm
   #endif
 
@@ -383,7 +356,7 @@
   #define MEM_read_byte(a)  pgm_read_byte(a)
   #define MEM2_read_byte(a)  pgm_read_byte(a)
   #define MEM2_read_word(a)  pgm_read_word(a)
-  #define lcd_fix2_string(a)  lcd_pgm_string(a)
+  #define lcd_fix2_string(a)  lcd_fix_string(a)
   #define use_lcd_pgm
 #endif
 
@@ -1215,8 +1188,6 @@ COMMON struct ADCconfig_t {
 
 #define uart_newline() Serial.println()
 
-/* -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- */
-
 #ifndef INHIBIT_SLEEP_MODE
   // prepare sleep mode
   EMPTY_INTERRUPT(TIMER2_COMPA_vect);
@@ -1229,77 +1200,22 @@ uint8_t tmp = 0;
 byte TestKey;
 byte TestKeyPin = 17;  // A3
 
-#ifdef LCD1602
-  #ifdef LCD_I2C
-    LiquidCrystal_I2C lcd(0x3F, 16, 2);
-  #else
-    LiquidCrystal lcd(7, 6, 5, 4, 3, 2);  // RS,E,D4,D5,D6,D7
-  #endif
-#endif
-
-#ifdef NOK5110
-  Adafruit_PCD8544 lcd = Adafruit_PCD8544(3, 4, 5, 6, 7);  // CLK,DIN,DC,CE,RST
-#endif
-
 #ifdef OLED096
-  #ifdef OLED_I2C
-   #define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels 
-    #define OLED_RESET 7
+  #define SCREEN_WIDTH 128 // OLED display width, in pixels
+  #define SCREEN_HEIGHT 64 // OLED display height, in pixels 
+  #define OLED_RESET 7
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-   // Adafruit_SSD1306 display(OLED_RESET);
-  #else
-    #define OLED_CLK   7   // D0
-    #define OLED_MOSI  6   // D1
-    #define OLED_RESET 5   // RES
-    #define OLED_DC    4   // DC
-    #define OLED_CS    3   // CS
-    Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
-  #endif
 #endif
 
-// begin of transistortester program
+
 void setup()
 {
   Serial.begin(9600);
 
   pinMode(TestKeyPin, INPUT);
 
-  #ifdef LCD1602
-    #ifdef LCD_I2C
-      lcd.begin();
-    #else
-      lcd.begin(16,2);
-    #endif
-
-    lcd_pgm_custom_char(LCD_CHAR_DIODE1, DiodeIcon1);  // Custom-Character Diode symbol >|
-    lcd_pgm_custom_char(LCD_CHAR_DIODE2, DiodeIcon2);  // Custom-Character Diode symbol |<
-    lcd_pgm_custom_char(LCD_CHAR_CAP,    CapIcon);     // Custom-Character Capacitor symbol ||
-    lcd_pgm_custom_char(LCD_CHAR_RESIS1, ResIcon1);    // Custom-Character Resistor symbol [
-    lcd_pgm_custom_char(LCD_CHAR_RESIS2, ResIcon2);    // Custom-Character Resistor symbol ]
-    lcd_pgm_custom_char(LCD_CHAR_OMEGA,  OmegaIcon);   // load Omega as Custom-Character
-    lcd_pgm_custom_char(LCD_CHAR_U,      MicroIcon);   // load Micro as Custom-Character
-    lcd.home();
-  
-    lcd_string("TransistorTester");
-    lcd_set_cursor(1, 0);
-    lcd_string("forArduino 1.08a");
-  #endif
-
-  #ifdef NOK5110
-    lcd.begin();
-    lcd.cp437(true);
-    lcd.setContrast(40);
-    lcd.clearDisplay();
-  #endif
-
   #ifdef OLED096
-    #ifdef OLED_I2C
-      display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    #else
-      display.begin(SSD1306_SWITCHCAPVCC);
-    #endif
-
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.cp437(true);
     display.clearDisplay();
     display.setTextColor(WHITE);
@@ -1307,7 +1223,7 @@ void setup()
     display.setCursor(0,0);
   #endif
 
-  #if defined(NOK5110) || defined(OLED096)
+  #if defined(OLED096)
     lcd_string("Component Tester");
     lcd_set_cursor(2, 0);
     lcd_string("for Arduino");
@@ -1426,10 +1342,6 @@ void loop()
 {
   // Entry: if start key is pressed before shut down
 start:
-
-  #ifdef NOK5110
-    lcd.display();
-  #endif
 
   #ifdef OLED096
     display.display();
@@ -1582,10 +1494,6 @@ start:
     lcd_line2();		// LCD position row 2, column 1
   #endif
 
-  #ifdef NOK5110
-    lcd.display();
-  #endif
-
   #ifdef OLED096
     display.display();
     display.setCursor(0,0);
@@ -1677,7 +1585,7 @@ start:
 
       UfOutput(0x70);
 
-      #if defined(NOK5110) || defined(OLED096)
+      #if defined(OLED096)
         lcd_line3();
       #endif
 
@@ -1830,13 +1738,13 @@ start:
         }
     }
 
-    #if defined(NOK5110) || defined(OLED096)
+    #if defined(OLED096)
       lcd_line2();
     #endif
 
     PinLayout('E','B','C'); 		// EBC= or 123=...
 
-    #if defined(NOK5110) || defined(OLED096)
+    #if defined(OLED096)
       lcd_line3();
     #else
       lcd_line2();  // 2 row 
@@ -1846,7 +1754,7 @@ start:
     DisplayValue(trans.hfe[0],0,0,3);
     lcd_space();
 
-    #if defined(NOK5110) || defined(OLED096)
+    #if defined(OLED096)
       lcd_line4();
     #endif
 
@@ -1879,7 +1787,7 @@ start:
       lcd_fix_string(mosfet_str);       // "-MOS "
     }
 
-    #if defined(NOK5110) || defined(OLED096)
+    #if defined(OLED096)
       lcd_line2();
     #endif
 
@@ -1907,7 +1815,7 @@ start:
         }
     }
 
-    #if defined(NOK5110) || defined(OLED096)
+    #if defined(OLED096)
       lcd_line3();
     #else
       lcd_line2();  // 2 row 
@@ -1919,7 +1827,7 @@ start:
       ReadCapacity(trans.b,trans.e);		// measure capacity
       DisplayValue(cap.cval,cap.cpre,'F',3);
 
-      #if defined(NOK5110) || defined(OLED096)
+      #if defined(OLED096)
         lcd_line4();
       #endif
 
@@ -1929,7 +1837,7 @@ start:
       lcd_data('=');
       DisplayValue(trans.uBE[1],-5,'A',2);
 
-      #if defined(NOK5110) || defined(OLED096)
+      #if defined(OLED096)
         lcd_line4();
       #endif
 
@@ -1999,7 +1907,7 @@ start:
         if (resis[0].lx != 0) {
           // resistor have also Inductance
 
-          #if defined(NOK5110) || defined(OLED096)
+          #if defined(OLED096)
             lcd_line3();
           #endif
 
@@ -2038,7 +1946,7 @@ start:
       GetVloss();			// get Voltage loss of capacitor
       if (cap.v_loss != 0) {
 
-        #if defined(NOK5110) || defined(OLED096)
+        #if defined(OLED096)
           lcd_line4();
         #endif
 
@@ -2054,7 +1962,7 @@ start:
       cap.esr = GetESR(cap.cb, cap.ca);		// get ESR of capacitor
       if (cap.esr < 65530) {
 
-        #if defined(NOK5110) || defined(OLED096)
+        #if defined(OLED096)
           lcd_line3();
         #endif
 
@@ -4042,7 +3950,7 @@ void GetIr(uint8_t hipin, uint8_t lopin) {
   u_res = W5msReadADC(lopin);		// read voltage
   if (u_res == 0) return;		// no Output, if no current in reverse direction
 
-  #if defined(NOK5110) || defined(OLED096)
+  #if defined(OLED096)
     lcd_line4();
   #endif
 
@@ -5670,11 +5578,7 @@ void Calibrate_UR(void) {
   #endif
 
   ADCconfig.Samples = ANZ_MESS; 	// set to configured number of ADC samples
-} 
- 
-/* -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- -=- */
-
-// Interfacing a HD44780 compatible LCD with 4-Bit-Interface mode
+}
 
 #ifdef STRIP_GRID_BOARD
   #warning "strip-grid-board layout selected!"
@@ -5682,22 +5586,7 @@ void Calibrate_UR(void) {
 
 void lcd_set_cursor(uint8_t row, uint8_t col)
 {
-  #ifdef LCD1602
-    int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-    if ( row >= 2 ) {
-      row = 1;
-    }
-    lcd.command(CMD_SetDDRAMAddress | (col + row_offsets[row]));
-  #endif
-
-  #ifdef NOK5110
-    lcd.setCursor(6*col, 10*row);
-  #endif
-
-  #ifdef OLED096
-    display.setCursor(6*col, 10*row);
-  #endif
-
+  display.setCursor(6*col, 10*row);
   uart_newline();
 }
 
@@ -5706,27 +5595,6 @@ void lcd_string(char *data) {
     lcd_data(*data);
     data++;
   }
-}
-
-void lcd_pgm_string(const unsigned char *data) {
-  unsigned char cc;
-  while(1) {
-    cc = pgm_read_byte(data);
-    if((cc == 0) || (cc == 128)) return;
-    lcd_data(cc);
-    data++;
-  }
-}
-
-void lcd_pgm_custom_char(uint8_t location, const unsigned char *chardata) {	
-  #ifdef LCD1602
-    location &= 0x7;
-    lcd.command(CMD_SetCGRAMAddress | (location << 3));
-    for(uint8_t i=0;i<8;i++) {
-      lcd.write(pgm_read_byte(chardata));
-      chardata++;
-    }
-  #endif
 }
 
 // sends numeric character (Pin Number) to the LCD 
@@ -5752,14 +5620,6 @@ void lcd_fix_string(const unsigned char *data) {
 
 // sends data byte to the LCD 
 void lcd_data(unsigned char temp1) {
-  #ifdef LCD1602
-    lcd.write(temp1);
-  #endif
-
-  #ifdef NOK5110
-    lcd.write(temp1);
-  #endif
-
   #ifdef OLED096
     display.write(temp1);
   #endif
@@ -5800,11 +5660,7 @@ void lcd_data(unsigned char temp1) {
 }
 
 void lcd_clear(void) {
-
-  #ifdef OLED096
-    display.clearDisplay();
-  #endif
-
+  display.clearDisplay();
   uart_newline();
 }
 
