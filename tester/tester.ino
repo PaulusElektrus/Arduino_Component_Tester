@@ -771,6 +771,7 @@ Is SWUART_INVERT defined, the UART works is inverse mode
   #define LCD_CHAR_CAP    0xc7
   #define LCD_CHAR_RESIS1 0x5b
   #define LCD_CHAR_RESIS2 0x5d
+  #define LCD_CHAR_RESIS3 0x3d
   #define LCD_CHAR_OMEGA  0xea
   #define LCD_CHAR_U      0xe6
   #define LCD_CHAR_DEGREE 0xa7
@@ -850,7 +851,7 @@ const uint16_t RLtab[] MEM_TEXT = {22447,20665,19138,17815,16657,15635,14727,139
  #endif
 #endif
 
-#if defined(LANG_ENGLISH)		// english
+#if defined(LANG_ENGLISH)
   const unsigned char TestRunning[] MEM_TEXT = "testing...";
   const unsigned char BatWeak[] MEM_TEXT = "weak";
   const unsigned char BatEmpty[] MEM_TEXT = "empty!";
@@ -927,7 +928,7 @@ const unsigned char VERSION_str[] MEM2_TEXT = "Component Tester 1.0";
 const unsigned char AnKat[] MEM_TEXT = {'-', LCD_CHAR_DIODE1, '-',0};
 const unsigned char KatAn[] MEM_TEXT = {'-', LCD_CHAR_DIODE2, '-',0};
 const unsigned char Diodes[] MEM_TEXT = {'*',LCD_CHAR_DIODE1, ' ', ' ',0};
-const unsigned char Resistor_str[] MEM_TEXT = {'-', LCD_CHAR_RESIS1, LCD_CHAR_RESIS2,'-',0};
+const unsigned char Resistor_str[] MEM_TEXT = {'-', LCD_CHAR_RESIS1, LCD_CHAR_RESIS3, LCD_CHAR_RESIS2,'-',0};
 
 #ifdef WITH_SELFTEST
   const unsigned char URefT[] MEM2_TEXT = "Ref=";
@@ -5774,17 +5775,21 @@ void lcd_data(unsigned char temp1) {
       uart_putc('|'); uart_putc('|'); break;
     }
     case LCD_CHAR_RESIS1: {
-      uart_putc('['); uart_putc('='); break;
+      uart_putc('['); break;
     }
     case LCD_CHAR_RESIS2: {
       uart_putc(']'); break;
     }
-    case LCD_CHAR_U: {		// micro
-      uart_putc('u');		// "u"
+    case LCD_CHAR_RESIS3: {
+      uart_putc('='); break;
+    }
+    case LCD_CHAR_U: {		
+      uart_putc('u');		
       break;
     }
-    case LCD_CHAR_OMEGA: {	// omega
-      uart_putc('o');           // "ohm"
+    case LCD_CHAR_OMEGA: {
+      uart_putc(' ');
+      uart_putc('o');          
       uart_putc('h');
       uart_putc('m'); break;
     }
@@ -5795,13 +5800,6 @@ void lcd_data(unsigned char temp1) {
 }
 
 void lcd_clear(void) {
-  #ifdef LCD1602
-    lcd.clear();
-  #endif
-
-  #ifdef NOK5110
-    lcd.clearDisplay();
-  #endif
 
   #ifdef OLED096
     display.clearDisplay();
